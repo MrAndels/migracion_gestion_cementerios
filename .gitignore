@@ -1,0 +1,26 @@
+datos_originales/
+*.zip
+*.dbf
+*.DBF
+*.cdx
+*.CDX
+*.fpt
+*.FPT
+*.idx
+*.IDX
+
+# Credenciales (usuario y clave de MySQL)
+.env
+
+# Entorno virtual de Python
+.venv/
+venv/
+
+# Archivos temporales de Python
+__pycache__/
+*.pyc
+
+# Copias y resultados de la base
+salidas/
+*.bak
+*_dump.sql
