@@ -1,5 +1,4 @@
-from pathlib import Path
-from dbfread import DBF
+from lector_dbf import buscar_ruta, leer_dbf_completo
 
 # Caracteres no ASCII que son normales en español
 NORMALES = set("áéíóúüñÁÉÍÓÚÜÑ¿ºª°")
@@ -23,9 +22,6 @@ def limpiar(v):
         return v if v != "" else None
     return v
 
-def leer_dbf(tabla):
-    carpeta = Path("datos_originales/dbf")
-    archivo = next(f for f in carpeta.rglob("*")
-                   if f.suffix.lower() == ".dbf" and f.stem.lower() == tabla)
-    # latin-1 no pierde ningún byte; arreglar_texto decide después
-    return DBF(str(archivo), ignore_missing_memofile=True, encoding="latin-1")
+def leer_dbf(tabla, avisos=None):
+    """Devuelve las filas de la tabla (activas y borradas) con la clave "_borrado"."""
+    return leer_dbf_completo(buscar_ruta(tabla), avisos)

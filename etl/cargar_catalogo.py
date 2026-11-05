@@ -7,6 +7,7 @@ from utiles import limpiar, leer_dbf
 
 load_dotenv()
 tabla = sys.argv[1].lower()
+recargar = "--recargar" in sys.argv[2:]
 
 # Columnas con nombre distinto: {tabla: {columna_mysql: columna_dbf}}
 MAPEO = {
@@ -25,29 +26,47 @@ url = URL.create(
 engine = create_engine(url)
 insp = inspect(engine)
 
-# Columnas de MySQL, sin id ni borrado (los maneja MySQL)
-cols_mysql = [c["name"] for c in insp.get_columns(tabla)
-              if c["name"].lower() not in ("id", "borrado")]
+todas = [c["name"] for c in insp.get_columns(tabla)]
+
+# Columnas de MySQL, sin id ni borrado (id lo pone MySQL; borrado lo calculamos aparte)
+cols_mysql = [c for c in todas if c.lower() not in ("id", "borrado")]
+tiene_borrado = "borrado" in [c.lower() for c in todas]
+cols_insert = cols_mysql + (["borrado"] if tiene_borrado else [])
 
 mapa = MAPEO.get(tabla, {})
 
+avisos = []
 filas = []
-for reg in leer_dbf(tabla):
+for reg in leer_dbf(tabla, avisos):
     fila = {k.lower(): limpiar(v) for k, v in reg.items()}
-    filas.append({c: fila.get(mapa.get(c, c).lower()) for c in cols_mysql})
+    nueva = {c: fila.get(mapa.get(c, c).lower()) for c in cols_mysql}
+    if tiene_borrado:
+        nueva["borrado"] = 1 if reg["_borrado"] else 0
+    filas.append(nueva)
 
-print(f"Leídos del DBF: {len(filas)} registros")
+activas = sum(1 for f in filas if f.get("borrado") == 0)
+borradas = sum(1 for f in filas if f.get("borrado") == 1)
+print(f"Leídos del DBF: {len(filas)} registros (activas {activas}, borradas {borradas})")
+for a in avisos:
+    print("AVISO:", a)
 
-columnas = ", ".join(cols_mysql)
-marcadores = ", ".join(f":{c}" for c in cols_mysql)
+columnas = ", ".join(cols_insert)
+marcadores = ", ".join(f":{c}" for c in cols_insert)
 sql = text(f"INSERT INTO {tabla} ({columnas}) VALUES ({marcadores})")
 
-with engine.begin() as conn:
+with engine.connect() as conn:
     antes = conn.execute(text(f"SELECT COUNT(*) FROM {tabla}")).scalar()
     if antes > 0:
-        print(f"La tabla {tabla} ya tiene {antes} registros. No cargo nada para evitar duplicados.")
-        sys.exit()
+        if not recargar:
+            print(f"La tabla {tabla} ya tiene {antes} registros. "
+                  f"Para vaciarla y volver a cargar usa: --recargar")
+            sys.exit()
+        print(f"Vaciando {tabla} ({antes} registros)...")
+        conn.execute(text(f"DELETE FROM {tabla}"))
+        conn.execute(text(f"ALTER TABLE {tabla} AUTO_INCREMENT = 1"))
+        conn.commit()
     conn.execute(sql, filas)
+    conn.commit()
     despues = conn.execute(text(f"SELECT COUNT(*) FROM {tabla}")).scalar()
 
 print(f"Cargados en MySQL: {despues} registros")
