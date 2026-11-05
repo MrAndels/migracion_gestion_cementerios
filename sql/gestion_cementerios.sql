@@ -793,6 +793,49 @@ CREATE VIEW v_inventario_activos AS SELECT * FROM inventario WHERE borrado = 0;
 CREATE VIEW v_prop_lotes_activos AS SELECT * FROM prop_lotes WHERE borrado = 0;
 CREATE VIEW v_prop_unidades_activos AS SELECT * FROM prop_unidades WHERE borrado = 0;
 
-
+USE gestion_cementerios;
 SELECT * FROM cementerios;
+
 SELECT * FROM causa_muerte;
+SELECT 'estado_boveda' AS tabla, COUNT(*) AS registros FROM estado_boveda
+UNION ALL SELECT 'forma_pago', COUNT(*) FROM forma_pago
+UNION ALL SELECT 'lugar_inh', COUNT(*) FROM lugar_inh
+UNION ALL SELECT 'parentesco', COUNT(*) FROM parentesco
+UNION ALL SELECT 'sector', COUNT(*) FROM sector
+UNION ALL SELECT 'tipo_serv', COUNT(*) FROM tipo_serv
+UNION ALL SELECT 'tipo_usuario', COUNT(*) FROM tipo_usuario
+UNION ALL SELECT 'oficinas', COUNT(*) FROM oficinas;
+
+
+SELECT * FROM bancos;
+SELECT * FROM tipo_id;
+SELECT banco, nombre, fec_acc FROM bancos ORDER BY banco;
+
+SELECT COUNT(*) FROM bancos;
+SELECT * FROM tipo_id;
+
+
+SELECT cementerio_id, cementerio, COUNT(*) AS total
+FROM pabellon
+GROUP BY cementerio_id, cementerio
+ORDER BY cementerio_id;
+
+SELECT COUNT(*) FROM pabellon;
+
+SELECT cod_fun, nombre, direccion
+FROM funerarias
+WHERE direccion LIKE '%º%' OR direccion LIKE '%á%'
+ORDER BY nombre
+LIMIT 20;
+
+SELECT COUNT(*) AS con_caracteres_raros
+FROM funerarias
+WHERE direccion LIKE '%§%' OR direccion LIKE '%ß%'
+OR nombre LIKE '%§%' OR nombre LIKE '%ß%';
+SELECT COUNT(*) FROM pabellon WHERE nombre LIKE '%§%' OR nombre LIKE '%ß%' OR nombre LIKE '%¤%';
+
+
+DESCRIBE oficinas;
+SELECT * FROM oficinas LIMIT 10;
+
+SELECT COUNT(*) FROM oficinas WHERE oficina LIKE '%§%' OR oficina LIKE '%ß%' OR oficina LIKE '%¤%';
