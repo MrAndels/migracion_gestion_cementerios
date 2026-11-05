@@ -792,3 +792,7 @@ CREATE VIEW v_pabellon_activos AS SELECT * FROM pabellon WHERE borrado = 0;
 CREATE VIEW v_inventario_activos AS SELECT * FROM inventario WHERE borrado = 0;
 CREATE VIEW v_prop_lotes_activos AS SELECT * FROM prop_lotes WHERE borrado = 0;
 CREATE VIEW v_prop_unidades_activos AS SELECT * FROM prop_unidades WHERE borrado = 0;
+
+
+SELECT * FROM cementerios;
+SELECT * FROM causa_muerte;
