@@ -1,10 +1,9 @@
 import os
 import sys
-from pathlib import Path
 from dotenv import load_dotenv
-from dbfread import DBF
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import URL
+from utiles import limpiar, leer_dbf
 
 load_dotenv()
 tabla = sys.argv[1].lower()
@@ -12,6 +11,7 @@ tabla = sys.argv[1].lower()
 # Columnas con nombre distinto: {tabla: {columna_mysql: columna_dbf}}
 MAPEO = {
     "tipo_id": {"id_orig": "id"},
+    "items": {"join_orig": "join"},
 }
 
 url = URL.create(
@@ -29,23 +29,11 @@ insp = inspect(engine)
 cols_mysql = [c["name"] for c in insp.get_columns(tabla)
               if c["name"].lower() not in ("id", "borrado")]
 
-# Buscar el .dbf de esa tabla
-CARPETA = Path("datos_originales/dbf")
-archivo = next(f for f in CARPETA.rglob("*")
-               if f.suffix.lower() == ".dbf" and f.stem.lower() == tabla)
-
-dbf = DBF(str(archivo), ignore_missing_memofile=True, char_decode_errors="replace")
-
-def limpiar(v):
-    if isinstance(v, str):
-        v = v.strip()
-        return v if v != "" else None
-    return v
+mapa = MAPEO.get(tabla, {})
 
 filas = []
-for reg in dbf:
+for reg in leer_dbf(tabla):
     fila = {k.lower(): limpiar(v) for k, v in reg.items()}
-    mapa = MAPEO.get(tabla, {})
     filas.append({c: fila.get(mapa.get(c, c).lower()) for c in cols_mysql})
 
 print(f"Leídos del DBF: {len(filas)} registros")
