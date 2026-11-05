@@ -1,3 +1,4 @@
+import datetime
 from lector_dbf import buscar_ruta, leer_dbf_completo
 
 # Caracteres no ASCII que son normales en español
@@ -20,6 +21,10 @@ def limpiar(v):
     if isinstance(v, str):
         v = arreglar_texto(v).strip()
         return v if v != "" else None
+    if isinstance(v, datetime.date):
+        dia = v.date() if isinstance(v, datetime.datetime) else v
+        if dia.year < 1900 or dia > datetime.date.today():
+            return None          # fecha imposible -> vacío
     return v
 
 def leer_dbf(tabla, avisos=None):
