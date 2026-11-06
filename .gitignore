@@ -24,3 +24,5 @@ __pycache__/
 salidas/
 *.bak
 *_dump.sql
+# Archivo temporal de VS Code
+tempCodeRunnerFile.py
