@@ -839,3 +839,877 @@ DESCRIBE oficinas;
 SELECT * FROM oficinas LIMIT 10;
 
 SELECT COUNT(*) FROM oficinas WHERE oficina LIKE '%§%' OR oficina LIKE '%ß%' OR oficina LIKE '%¤%';
+
+SELECT * FROM galerias;
+SELECT item, join_orig, nombre, sele FROM items ORDER BY item LIMIT 20;
+SELECT item, COUNT(*) AS veces FROM items GROUP BY item HAVING COUNT(*) > 1;
+
+
+SELECT COUNT(*) AS total,
+       SUM(cementerio_id IS NULL) AS sin_cementerio,
+       SUM(tipo_serv_id IS NULL) AS sin_tipo_serv,
+       SUM(item_id IS NULL) AS sin_item,
+       SUM(itemold_id IS NULL) AS sin_itemold
+FROM servicios;
+
+SELECT borrado, COUNT(*) FROM servicios GROUP BY borrado;
+USE gestion_cementerios;
+DELETE FROM servicios WHERE id > 0;
+
+SELECT COUNT(*) FROM servicios;
+
+SELECT 'estado_boveda' AS tabla, SUM(borrado=0) AS activas, SUM(borrado=1) AS borradas FROM estado_boveda
+UNION ALL SELECT 'lugar_inh', SUM(borrado=0), SUM(borrado=1) FROM lugar_inh
+UNION ALL SELECT 'sector', SUM(borrado=0), SUM(borrado=1) FROM sector
+UNION ALL SELECT 'oficinas', SUM(borrado=0), SUM(borrado=1) FROM oficinas
+UNION ALL SELECT 'bancos', SUM(borrado=0), SUM(borrado=1) FROM bancos
+UNION ALL SELECT 'galerias', SUM(borrado=0), SUM(borrado=1) FROM galerias
+UNION ALL SELECT 'items', SUM(borrado=0), SUM(borrado=1) FROM items
+UNION ALL SELECT 'funerarias', SUM(borrado=0), SUM(borrado=1) FROM funerarias
+UNION ALL SELECT 'servicios', SUM(borrado=0), SUM(borrado=1) FROM servicios
+UNION ALL SELECT 'pabellon', SUM(borrado=0), SUM(borrado=1) FROM pabellon;
+
+
+
+SELECT SUM(a) AS activas, SUM(b) AS borradas FROM (
+SELECT SUM(borrado=0) a, SUM(borrado=1) b FROM bancos
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM causa_muerte
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM cementerios
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM estado_boveda
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM forma_pago
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM galerias
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM items
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM lugar_inh
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM oficinas
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM parentesco
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM sector
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM tipo_id
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM tipo_serv
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM tipo_usuario
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM consignaciones
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM cremados
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM detalle_fact
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM exhumados
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM factura
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM funerarias
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM inhumados
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM inventario
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM pabellon
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM servicios
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM conciliacion
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM devoluciones
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM efectivo
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM esqueletos
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM inhumados_nn
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM prop_lotes
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM prop_unidades
+UNION ALL SELECT SUM(borrado=0), SUM(borrado=1) FROM rc
+) t;
+
+
+SELECT LENGTH(oficina) AS largo,
+       COUNT(*) AS filas,
+       SUM(oficina LIKE '%.%') AS con_punto,
+       MIN(oficina) AS ejemplo_menor,
+       MAX(oficina) AS ejemplo_mayor
+FROM consignaciones
+GROUP BY LENGTH(oficina)
+ORDER BY largo;
+
+SELECT REPLACE(oficina, '.', '') AS valor, COUNT(*) AS filas
+FROM consignaciones
+WHERE oficina IS NOT NULL
+  AND REPLACE(oficina, '.', '') NOT REGEXP '^[0-9]+$'
+GROUP BY REPLACE(oficina, '.', '')
+ORDER BY filas DESC
+LIMIT 30;
+
+UPDATE consignaciones
+SET oficina = CASE
+    WHEN REPLACE(oficina, '.', '') REGEXP '^[0-9]+$'
+        THEN LPAD(REPLACE(oficina, '.', ''), 3, '0')
+    WHEN REPLACE(oficina, '.', '') IN ('POP', 'OCC', 'CAV', 'AHS')
+        THEN UPPER(REPLACE(oficina, '.', ''))
+    ELSE NULL
+END
+WHERE id > 0 AND oficina IS NOT NULL;
+
+SELECT LENGTH(oficina) AS largo, COUNT(*) AS filas
+FROM consignaciones
+GROUP BY LENGTH(oficina)
+ORDER BY largo;
+
+SELECT 'inhumados.fecha_inh' AS campo, MIN(fecha_inh) AS minimo, MAX(fecha_inh) AS maximo, SUM(fecha_inh = '1900-01-01') AS en_1900 FROM inhumados
+UNION ALL SELECT 'cremados.fecha_cre', MIN(fecha_cre), MAX(fecha_cre), SUM(fecha_cre = '1900-01-01') FROM cremados
+UNION ALL SELECT 'exhumados.fecha_exh', MIN(fecha_exh), MAX(fecha_exh), SUM(fecha_exh = '1900-01-01') FROM exhumados
+UNION ALL SELECT 'factura.fecha', MIN(fecha), MAX(fecha), SUM(fecha = '1900-01-01') FROM factura
+UNION ALL SELECT 'consignaciones.fecha', MIN(fecha), MAX(fecha), SUM(fecha = '1900-01-01') FROM consignaciones
+UNION ALL SELECT 'rc.fecha', MIN(fecha), MAX(fecha), SUM(fecha = '1900-01-01') FROM rc;
+
+SELECT 'inhumados' AS tabla, YEAR(fecha_inh) AS anio, COUNT(*) AS filas
+FROM inhumados
+WHERE fecha_inh < '2001-01-01' OR fecha_inh > '2023-06-01'
+GROUP BY YEAR(fecha_inh)
+UNION ALL
+SELECT 'exhumados', YEAR(fecha_exh), COUNT(*)
+FROM exhumados
+WHERE fecha_exh < '2001-01-01' OR fecha_exh > '2023-06-01'
+GROUP BY YEAR(fecha_exh)
+ORDER BY 1, 2;
+
+UPDATE inhumados
+SET fecha_inh = NULL
+WHERE id > 0 AND (fecha_inh < '1901-01-01' OR fecha_inh > '2023-06-01');
+
+UPDATE exhumados
+SET fecha_exh = NULL
+WHERE id > 0 AND fecha_exh < '1901-01-01';
+
+SELECT 'inhumados' AS tabla, MIN(fecha_inh) AS minimo, MAX(fecha_inh) AS maximo, SUM(fecha_inh IS NULL) AS vacias FROM inhumados
+UNION ALL SELECT 'exhumados', MIN(fecha_exh), MAX(fecha_exh), SUM(fecha_exh IS NULL) FROM exhumados;
+
+SELECT COUNT(*) AS sobrantes
+FROM (
+  SELECT ROW_NUMBER() OVER (
+           PARTITION BY factura, servicio, cantidad, valor, cementeri1, dev, fec_acc, pfac
+           ORDER BY id) AS n
+  FROM detalle_fact
+  WHERE borrado = 0
+) t
+WHERE n > 1;
+
+
+
+DELETE d
+FROM detalle_fact d
+JOIN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY factura, servicio, cantidad, valor, cementeri1, dev, fec_acc, pfac
+             ORDER BY id) AS n
+    FROM detalle_fact
+    WHERE borrado = 0
+  ) t
+  WHERE n > 1
+) x ON x.id = d.id
+WHERE d.id > 0;
+
+SELECT COUNT(*) AS activas FROM detalle_fact WHERE borrado = 0;
+
+
+-- 1. Contar sobrantes (debe dar 809)
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY fecha, factura, fec_acc
+           ORDER BY id) AS n
+  FROM esqueletos
+  WHERE borrado = 0
+) t WHERE n > 1;
+
+
+
+-- 2. Respaldo
+CREATE TABLE esqueletos_bak AS SELECT * FROM esqueletos;
+
+-- 3. Borrar duplicados
+DELETE e
+FROM esqueletos e
+JOIN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY fecha, factura, fec_acc
+             ORDER BY id) AS n
+    FROM esqueletos
+    WHERE borrado = 0
+  ) t
+  WHERE n > 1
+) x ON x.id = e.id
+WHERE e.id > 0;
+
+-- 4. Verificar
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY fecha, factura, fec_acc
+           ORDER BY id) AS n
+  FROM esqueletos
+  WHERE borrado = 0
+) t WHERE n > 1;
+
+
+
+
+-- 1. Contar sobrantes (debe dar 297)
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY cementerio, sector, subsector, manzana, lote, tipo_cons,
+                        maus_statu, galeria, lugar_no, fila, copi_escr, copi_cert,
+                        prop_nit, prop_nombr, observacio, inhumado, fecha_inh,
+                        lugar_inh, estado
+           ORDER BY id) AS n
+  FROM prop_unidades
+  WHERE borrado = 0
+) t WHERE n > 1;
+
+
+
+
+
+
+-- 2. Respaldo
+CREATE TABLE prop_unidades_bak AS SELECT * FROM prop_unidades;
+
+-- 3. Borrar duplicados
+DELETE p
+FROM prop_unidades p
+JOIN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY cementerio, sector, subsector, manzana, lote, tipo_cons,
+                          maus_statu, galeria, lugar_no, fila, copi_escr, copi_cert,
+                          prop_nit, prop_nombr, observacio, inhumado, fecha_inh,
+                          lugar_inh, estado
+             ORDER BY id) AS n
+    FROM prop_unidades
+    WHERE borrado = 0
+  ) t
+  WHERE n > 1
+) x ON x.id = p.id
+WHERE p.id > 0;
+
+-- 4. Verificar
+SELECT COUNT(*) AS activas FROM prop_unidades WHERE borrado = 0;
+
+-- 1. Contar sobrantes (debe dar 182)
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY cementerio, sector, pabellon, galeria, lugar_inh, lugar_no,
+                        fila, tipo_usuar, propietari, disponible, estado, activado,
+                        fec_acc
+           ORDER BY id) AS n
+  FROM inventario
+  WHERE borrado = 0
+) t WHERE n > 1;
+
+
+-- 2. Respaldo
+CREATE TABLE inventario_bak AS SELECT * FROM inventario;
+
+-- 3. Borrar duplicados
+DELETE i
+FROM inventario i
+JOIN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY cementerio, sector, pabellon, galeria, lugar_inh, lugar_no,
+                          fila, tipo_usuar, propietari, disponible, estado, activado,
+                          fec_acc
+             ORDER BY id) AS n
+    FROM inventario
+    WHERE borrado = 0
+  ) t
+  WHERE n > 1
+) x ON x.id = i.id
+WHERE i.id > 0;
+
+-- 4. Verificar
+SELECT COUNT(*) AS activas FROM inventario WHERE borrado = 0;
+
+
+-- 1. Contar sobrantes (debe dar 23)
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY fecha_inh, licencia, protocolo, nombre, cementerio, sector,
+                        pabellon, galeria, lugar_inh, lugar_no, fila, tipo_usuar,
+                        causa_muer, fe_cal_exh, edad, sexo, fec_acc, reg, servicio,
+                        cierre, notcri, certidef, fecnec
+           ORDER BY id) AS n
+  FROM inhumados_nn
+  WHERE borrado = 0
+) t WHERE n > 1;
+
+
+-- 2. Respaldo
+CREATE TABLE inhumados_nn_bak AS SELECT * FROM inhumados_nn;
+
+-- 3. Borrar duplicados
+DELETE n
+FROM inhumados_nn n
+JOIN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY fecha_inh, licencia, protocolo, nombre, cementerio, sector,
+                          pabellon, galeria, lugar_inh, lugar_no, fila, tipo_usuar,
+                          causa_muer, fe_cal_exh, edad, sexo, fec_acc, reg, servicio,
+                          cierre, notcri, certidef, fecnec
+             ORDER BY id) AS rn
+    FROM inhumados_nn
+    WHERE borrado = 0
+  ) t
+  WHERE rn > 1
+) x ON x.id = n.id
+WHERE n.id > 0;
+
+-- 4. Verificar
+SELECT COUNT(*) AS activas FROM inhumados_nn WHERE borrado = 0;
+
+
+-- 1. Contar sobrantes (debe dar 17)
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY factura, fecha_cre, certificad, licencia, nombre, cementerio,
+                        tipo_crema, tipo_usuar, nombre_deu, nit_deudo, dir_deudo,
+                        tel_deudo, destino, causa_muer, edad, entrega_ce, cedula,
+                        cert_defun, funeraria, sexo, urna, fec_ingser, tipo_id,
+                        fec_acc, servicio, cierre, emailc, bloquea
+           ORDER BY id) AS rn
+  FROM cremados
+  WHERE borrado = 0
+) t WHERE rn > 1;
+ 
+
+-- 2. Respaldo
+CREATE TABLE cremados_bak AS SELECT * FROM cremados;
+
+-- 3. Borrar duplicados
+DELETE c
+FROM cremados c
+JOIN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY factura, fecha_cre, certificad, licencia, nombre, cementerio,
+                          tipo_crema, tipo_usuar, nombre_deu, nit_deudo, dir_deudo,
+                          tel_deudo, destino, causa_muer, edad, entrega_ce, cedula,
+                          cert_defun, funeraria, sexo, urna, fec_ingser, tipo_id,
+                          fec_acc, servicio, cierre, emailc, bloquea
+             ORDER BY id) AS rn
+    FROM cremados
+    WHERE borrado = 0
+  ) t
+  WHERE rn > 1
+) x ON x.id = c.id
+WHERE c.id > 0;
+
+-- 4. Verificar
+SELECT COUNT(*) AS activas FROM cremados WHERE borrado = 0;
+
+
+-- 1. Contar sobrantes (debe dar 7)
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY factura, fecha_inh, licencia, nombre, cementerio, sector,
+                        pabellon, galeria, lugar_inh, lugar_no, fila, tipo_usuar,
+                        propietari, causa_muer, no_contrat, nombre_deu, nit_deudo,
+                        dir_deudo, tel_deudo, parentesco, fe_cal_exh, edad, sexo,
+                        cedula, tipo_id, cert_defun, funeraria, fec_lic_ex,
+                        licen_exhu, fec_acc, reg, servicio, sele, cert_crem,
+                        fe_cer_cre, exp_cer_cr, fe_lic_inh, exp_cer_ex, new_dir,
+                        cierre, email, bloquea
+           ORDER BY id) AS rn
+  FROM inhumados
+  WHERE borrado = 0
+) t WHERE rn > 1;
+
+
+-- 2. Respaldo
+CREATE TABLE inhumados_bak AS SELECT * FROM inhumados;
+
+-- 3. Borrar duplicados
+DELETE h
+FROM inhumados h
+JOIN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY factura, fecha_inh, licencia, nombre, cementerio, sector,
+                          pabellon, galeria, lugar_inh, lugar_no, fila, tipo_usuar,
+                          propietari, causa_muer, no_contrat, nombre_deu, nit_deudo,
+                          dir_deudo, tel_deudo, parentesco, fe_cal_exh, edad, sexo,
+                          cedula, tipo_id, cert_defun, funeraria, fec_lic_ex,
+                          licen_exhu, fec_acc, reg, servicio, sele, cert_crem,
+                          fe_cer_cre, exp_cer_cr, fe_lic_inh, exp_cer_ex, new_dir,
+                          cierre, email, bloquea
+             ORDER BY id) AS rn
+    FROM inhumados
+    WHERE borrado = 0
+  ) t
+  WHERE rn > 1
+) x ON x.id = h.id
+WHERE h.id > 0;
+
+-- 4. Verificar
+SELECT COUNT(*) AS activas FROM inhumados WHERE borrado = 0;
+
+
+
+-- Respaldos
+CREATE TABLE efectivo_bak    AS SELECT * FROM efectivo;
+CREATE TABLE items_bak       AS SELECT * FROM items;
+CREATE TABLE oficinas_bak    AS SELECT * FROM oficinas;
+CREATE TABLE prop_lotes_bak  AS SELECT * FROM prop_lotes;
+
+-- efectivo
+DELETE t FROM efectivo t
+JOIN (
+  SELECT id FROM (
+    SELECT id, ROW_NUMBER() OVER (
+             PARTITION BY factura, valor, fec_acc ORDER BY id) AS rn
+    FROM efectivo WHERE borrado = 0
+  ) x WHERE rn > 1
+) d ON d.id = t.id
+WHERE t.id > 0;
+
+-- items
+DELETE t FROM items t
+JOIN (
+  SELECT id FROM (
+    SELECT id, ROW_NUMBER() OVER (
+             PARTITION BY join_orig, item, nombre, tabla, criterio, mitem,
+                          mpropietar, mlugar_inh, mtipo_usua, sele, inform, repo
+             ORDER BY id) AS rn
+    FROM items WHERE borrado = 0
+  ) x WHERE rn > 1
+) d ON d.id = t.id
+WHERE t.id > 0;
+
+-- oficinas
+DELETE t FROM oficinas t
+JOIN (
+  SELECT id FROM (
+    SELECT id, ROW_NUMBER() OVER (
+             PARTITION BY bank, ofi, oficina ORDER BY id) AS rn
+    FROM oficinas WHERE borrado = 0
+  ) x WHERE rn > 1
+) d ON d.id = t.id
+WHERE t.id > 0;
+
+-- prop_lotes
+DELETE t FROM prop_lotes t
+JOIN (
+  SELECT id FROM (
+    SELECT id, ROW_NUMBER() OVER (
+             PARTITION BY cementerio, sector, subsector, manzana, lote, mausoleo,
+                          tipo_cons, maus_statu, lote_area, bov_rotu, bov_lapi,
+                          bov_blan, bov_vaci, bov_total, osa_rot, osa_lap, osa_blan,
+                          osa_vacio, osa_tot, cen_rot, cen_lap, cen_blan, cen_vacio,
+                          cen_tot, copi_escr, copi_cert, codigo, folio, foto,
+                          bo_rot, bo_lap, bo_blan, bo_vacio, bov_sin, bo_tot,
+                          osa_sin, cen_sin
+             ORDER BY id) AS rn
+    FROM prop_lotes WHERE borrado = 0
+  ) x WHERE rn > 1
+) d ON d.id = t.id
+WHERE t.id > 0;
+
+-- Verificación
+SELECT 'efectivo'   AS tabla, COUNT(*) AS activas FROM efectivo   WHERE borrado = 0
+UNION ALL SELECT 'items',      COUNT(*) FROM items      WHERE borrado = 0
+UNION ALL SELECT 'oficinas',   COUNT(*) FROM oficinas   WHERE borrado = 0
+UNION ALL SELECT 'prop_lotes', COUNT(*) FROM prop_lotes WHERE borrado = 0;
+
+
+
+SELECT forma_pago, nombre FROM forma_pago;
+SELECT cementerio, nombre FROM cementerios;
+
+SELECT 'factura.forma_pago' AS columna, f.forma_pago AS codigo, COUNT(*) AS filas
+FROM factura f
+WHERE f.forma_pago IS NOT NULL AND f.forma_pago NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM forma_pago c WHERE c.forma_pago = f.forma_pago)
+GROUP BY f.forma_pago
+UNION ALL
+SELECT 'exhumados.cementerio', e.cementerio, COUNT(*)
+FROM exhumados e
+WHERE e.cementerio IS NOT NULL AND e.cementerio NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM cementerios c WHERE c.cementerio = e.cementerio)
+GROUP BY e.cementerio
+UNION ALL
+SELECT 'exhumados.sector', e.sector, COUNT(*)
+FROM exhumados e
+WHERE e.sector IS NOT NULL AND e.sector NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM sector c WHERE c.sector = e.sector)
+GROUP BY e.sector
+UNION ALL
+SELECT 'inhumados.servicio', i.servicio, COUNT(*)
+FROM inhumados i
+WHERE i.servicio IS NOT NULL AND i.servicio NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM items c WHERE c.item = i.servicio)
+GROUP BY i.servicio;
+
+SELECT forma_pago, nombre FROM forma_pago;
+SELECT cementerio, nombre FROM cementerios;
+
+
+UPDATE factura f SET f.forma_pago = NULL
+WHERE f.id > 0 AND f.forma_pago IS NOT NULL AND f.forma_pago NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM forma_pago c WHERE c.forma_pago = f.forma_pago);
+
+UPDATE exhumados e SET e.cementerio = NULL
+WHERE e.id > 0 AND e.cementerio IS NOT NULL AND e.cementerio NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM cementerios c WHERE c.cementerio = e.cementerio);
+
+UPDATE exhumados e SET e.sector = NULL
+WHERE e.id > 0 AND e.sector IS NOT NULL AND e.sector NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM sector c WHERE c.sector = e.sector);
+
+UPDATE inhumados i SET i.servicio = NULL
+WHERE i.id > 0 AND i.servicio IS NOT NULL AND i.servicio NOT REGEXP '^[A-Za-z0-9]+$'
+  AND NOT EXISTS (SELECT 1 FROM items c WHERE c.item = i.servicio);
+  
+  
+  
+SELECT 'factura' AS tabla, cementerio, COUNT(*) AS filas
+FROM factura WHERE borrado = 0 AND cementerio = 'o' GROUP BY cementerio
+UNION ALL
+SELECT 'prop_lotes', cementerio, COUNT(*)
+FROM prop_lotes WHERE borrado = 0 AND cementerio = 'IR' GROUP BY cementerio;
+
+
+UPDATE factura SET cementerio = NULL
+WHERE id > 0 AND cementerio = 'o'
+  AND NOT EXISTS (SELECT 1 FROM cementerios c WHERE c.cementerio = factura.cementerio);
+
+UPDATE prop_lotes SET cementerio = NULL
+WHERE id > 0 AND cementerio = 'IR'
+  AND NOT EXISTS (SELECT 1 FROM cementerios c WHERE c.cementerio = prop_lotes.cementerio);
+  
+  
+  
+  
+  
+  
+  SELECT 'factura' AS padre, COUNT(*) AS codigos_repetidos FROM (
+  SELECT factura FROM factura WHERE borrado = 0 AND factura IS NOT NULL
+  GROUP BY factura HAVING COUNT(*) > 1) x
+UNION ALL
+SELECT 'servicios', COUNT(*) FROM (
+  SELECT servicio FROM servicios WHERE borrado = 0 AND servicio IS NOT NULL
+  GROUP BY servicio HAVING COUNT(*) > 1) x;
+  
+  
+  
+  
+-- Facturas con código repetido (23 códigos)
+SELECT f.id, f.factura, f.fecha, f.cementerio, f.forma_pago
+FROM factura f
+JOIN (SELECT factura FROM factura
+      WHERE borrado = 0 AND factura IS NOT NULL
+      GROUP BY factura HAVING COUNT(*) > 1) r ON r.factura = f.factura
+WHERE f.borrado = 0
+ORDER BY f.factura, f.id;
+
+-- Servicio con código repetido (1 código)
+SELECT s.*
+FROM servicios s
+JOIN (SELECT servicio FROM servicios
+      WHERE borrado = 0 AND servicio IS NOT NULL
+      GROUP BY servicio HAVING COUNT(*) > 1) r ON r.servicio = s.servicio
+WHERE s.borrado = 0
+ORDER BY s.servicio, s.id;
+
+
+
+SELECT f.factura, COUNT(*) AS filas,
+  CONCAT_WS(', ',
+    IF(COUNT(DISTINCT COALESCE(CAST(fecha AS CHAR),'~'))>1,'fecha',NULL),
+    IF(COUNT(DISTINCT COALESCE(recibido_d,'~'))>1,'recibido_d',NULL),
+    IF(COUNT(DISTINCT COALESCE(nit,'~'))>1,'nit',NULL),
+    IF(COUNT(DISTINCT COALESCE(direccion,'~'))>1,'direccion',NULL),
+    IF(COUNT(DISTINCT COALESCE(telefono,'~'))>1,'telefono',NULL),
+    IF(COUNT(DISTINCT COALESCE(fallecido,'~'))>1,'fallecido',NULL),
+    IF(COUNT(DISTINCT COALESCE(forma_pago,'~'))>1,'forma_pago',NULL),
+    IF(COUNT(DISTINCT COALESCE(CAST(valor AS CHAR),'~'))>1,'valor',NULL),
+    IF(COUNT(DISTINCT COALESCE(funeraria,'~'))>1,'funeraria',NULL),
+    IF(COUNT(DISTINCT COALESCE(licencia,'~'))>1,'licencia',NULL),
+    IF(COUNT(DISTINCT COALESCE(cementerio,'~'))>1,'cementerio',NULL),
+    IF(COUNT(DISTINCT COALESCE(cementeri1,'~'))>1,'cementeri1',NULL),
+    IF(COUNT(DISTINCT COALESCE(sector,'~'))>1,'sector',NULL),
+    IF(COUNT(DISTINCT COALESCE(pabellon,'~'))>1,'pabellon',NULL),
+    IF(COUNT(DISTINCT COALESCE(galeria,'~'))>1,'galeria',NULL),
+    IF(COUNT(DISTINCT COALESCE(lugar_inh,'~'))>1,'lugar_inh',NULL),
+    IF(COUNT(DISTINCT COALESCE(lugar_no,'~'))>1,'lugar_no',NULL),
+    IF(COUNT(DISTINCT COALESCE(fila,'~'))>1,'fila',NULL),
+    IF(COUNT(DISTINCT COALESCE(CAST(anulada AS CHAR),'~'))>1,'anulada',NULL),
+    IF(COUNT(DISTINCT COALESCE(cedula,'~'))>1,'cedula',NULL),
+    IF(COUNT(DISTINCT COALESCE(CAST(fech_anul AS CHAR),'~'))>1,'fech_anul',NULL),
+    IF(COUNT(DISTINCT COALESCE(CAST(fec_acc AS CHAR),'~'))>1,'fec_acc',NULL),
+    IF(COUNT(DISTINCT COALESCE(CAST(cierre AS CHAR),'~'))>1,'cierre',NULL),
+    IF(COUNT(DISTINCT COALESCE(wfalle,'~'))>1,'wfalle',NULL),
+    IF(COUNT(DISTINCT COALESCE(rc,'~'))>1,'rc',NULL),
+    IF(COUNT(DISTINCT COALESCE(CAST(impreso AS CHAR),'~'))>1,'impreso',NULL)
+  ) AS columnas_que_difieren
+FROM factura f
+WHERE borrado = 0 AND factura IN (
+  SELECT factura FROM factura WHERE borrado = 0 AND factura IS NOT NULL
+  GROUP BY factura HAVING COUNT(*) > 1)
+GROUP BY f.factura
+ORDER BY f.factura;
+
+
+
+CREATE TABLE factura_bak AS SELECT * FROM factura;
+
+SELECT COUNT(*) AS sobrantes FROM (
+  SELECT id, ROW_NUMBER() OVER (
+           PARTITION BY factura, fecha, recibido_d, nit, direccion, telefono, fallecido,
+                        forma_pago, valor, funeraria, licencia, cementerio, cementeri1,
+                        sector, pabellon, galeria, lugar_inh, lugar_no, fila, anulada,
+                        cedula, fech_anul, cierre, wfalle, rc, impreso
+           ORDER BY id) AS rn
+  FROM factura WHERE borrado = 0
+) t WHERE rn > 1;
+
+
+DELETE f
+FROM factura f
+JOIN (
+  SELECT id FROM (
+    SELECT id, ROW_NUMBER() OVER (
+             PARTITION BY factura, fecha, recibido_d, nit, direccion, telefono, fallecido,
+                          forma_pago, valor, funeraria, licencia, cementerio, cementeri1,
+                          sector, pabellon, galeria, lugar_inh, lugar_no, fila, anulada,
+                          cedula, fech_anul, cierre, wfalle, rc, impreso
+             ORDER BY id) AS rn
+    FROM factura WHERE borrado = 0
+  ) t WHERE rn > 1
+) x ON x.id = f.id
+WHERE f.id > 0;
+
+DELETE FROM factura
+WHERE id = 343230 AND factura = 'F-22613'
+  AND fecha IS NULL AND cementerio IS NULL AND forma_pago IS NULL AND valor IS NULL;
+  
+
+SELECT COUNT(*) AS activas FROM factura WHERE borrado = 0;
+
+SELECT COUNT(*) AS codigos_repetidos FROM (
+  SELECT factura FROM factura WHERE borrado = 0 AND factura IS NOT NULL
+  GROUP BY factura HAVING COUNT(*) > 1) x;
+
+
+SELECT (SELECT COUNT(*) FROM factura_bak WHERE borrado = 0) AS antes,
+       (SELECT COUNT(*) FROM factura     WHERE borrado = 0) AS despues;
+
+SELECT b.id, b.factura
+FROM factura_bak b
+LEFT JOIN factura f ON f.id = b.id
+WHERE b.borrado = 0 AND f.id IS NULL
+ORDER BY b.factura, b.id;
+
+
+UPDATE factura
+SET funeraria_id = CASE funeraria WHEN '860025393-8' THEN 147 WHEN '900029958-1' THEN 47 END
+WHERE id > 0 AND funeraria_id IS NULL AND funeraria IN ('860025393-8', '900029958-1');
+
+UPDATE inhumados
+SET funeraria_id = CASE funeraria WHEN '860025393-8' THEN 147 WHEN '900029958-1' THEN 47 END
+WHERE id > 0 AND funeraria_id IS NULL AND funeraria IN ('860025393-8', '900029958-1');
+
+UPDATE cremados
+SET funeraria_id = CASE funeraria WHEN '860025393-8' THEN 147 WHEN '900029958-1' THEN 47 END
+WHERE id > 0 AND funeraria_id IS NULL AND funeraria IN ('860025393-8', '900029958-1');
+
+
+SELECT 'factura' AS tabla, COUNT(*) AS sin_enlace FROM factura
+ WHERE borrado = 0 AND funeraria IS NOT NULL AND funeraria_id IS NULL
+UNION ALL SELECT 'inhumados', COUNT(*) FROM inhumados
+ WHERE borrado = 0 AND funeraria IS NOT NULL AND funeraria_id IS NULL
+UNION ALL SELECT 'cremados', COUNT(*) FROM cremados
+ WHERE borrado = 0 AND funeraria IS NOT NULL AND funeraria_id IS NULL;
+ 
+ 
+ SELECT COUNT(*) AS recuperables
+FROM consignaciones c
+JOIN (
+  SELECT bank, ofi, MIN(id) AS pid
+  FROM oficinas
+  WHERE borrado = 0
+  GROUP BY bank, ofi
+  HAVING COUNT(*) = 1
+) p ON p.bank = c.banco AND p.ofi = c.oficina
+WHERE c.borrado = 0 AND c.oficina_id IS NULL;
+
+
+SELECT (inhumado_id IS NOT NULL) + (exhumado_id IS NOT NULL) + (cremado_id IS NOT NULL) AS enlaces,
+       COUNT(*) AS filas
+FROM esqueletos
+WHERE borrado = 0 AND factura IS NOT NULL
+GROUP BY enlaces
+ORDER BY enlaces;
+
+
+SELECT 'detalle_fact.factura_id' AS enlace, COUNT(*) AS rotas
+FROM detalle_fact d LEFT JOIN factura f ON f.id = d.factura_id
+WHERE d.factura_id IS NOT NULL AND f.id IS NULL
+UNION ALL
+SELECT 'inhumados.funeraria_id', COUNT(*)
+FROM inhumados i LEFT JOIN funerarias f ON f.id = i.funeraria_id
+WHERE i.funeraria_id IS NOT NULL AND f.id IS NULL
+UNION ALL
+SELECT 'esqueletos.cremado_id', COUNT(*)
+FROM esqueletos e LEFT JOIN cremados c ON c.id = e.cremado_id
+WHERE e.cremado_id IS NOT NULL AND c.id IS NULL;
+
+
+SELECT c.tabla, c.activas, e.ea AS activas_esperadas,
+       c.borradas, e.eb AS borradas_esperadas,
+       IF(c.activas = e.ea AND c.borradas = e.eb, 'OK', 'REVISAR') AS estado
+FROM (
+  SELECT 'bancos' AS tabla, SUM(borrado=0) AS activas, SUM(borrado=1) AS borradas FROM bancos
+  UNION ALL SELECT 'causa_muerte', SUM(borrado=0), SUM(borrado=1) FROM causa_muerte
+  UNION ALL SELECT 'cementerios', SUM(borrado=0), SUM(borrado=1) FROM cementerios
+  UNION ALL SELECT 'estado_boveda', SUM(borrado=0), SUM(borrado=1) FROM estado_boveda
+  UNION ALL SELECT 'forma_pago', SUM(borrado=0), SUM(borrado=1) FROM forma_pago
+  UNION ALL SELECT 'galerias', SUM(borrado=0), SUM(borrado=1) FROM galerias
+  UNION ALL SELECT 'items', SUM(borrado=0), SUM(borrado=1) FROM items
+  UNION ALL SELECT 'lugar_inh', SUM(borrado=0), SUM(borrado=1) FROM lugar_inh
+  UNION ALL SELECT 'oficinas', SUM(borrado=0), SUM(borrado=1) FROM oficinas
+  UNION ALL SELECT 'parentesco', SUM(borrado=0), SUM(borrado=1) FROM parentesco
+  UNION ALL SELECT 'sector', SUM(borrado=0), SUM(borrado=1) FROM sector
+  UNION ALL SELECT 'tipo_id', SUM(borrado=0), SUM(borrado=1) FROM tipo_id
+  UNION ALL SELECT 'tipo_serv', SUM(borrado=0), SUM(borrado=1) FROM tipo_serv
+  UNION ALL SELECT 'tipo_usuario', SUM(borrado=0), SUM(borrado=1) FROM tipo_usuario
+  UNION ALL SELECT 'consignaciones', SUM(borrado=0), SUM(borrado=1) FROM consignaciones
+  UNION ALL SELECT 'cremados', SUM(borrado=0), SUM(borrado=1) FROM cremados
+  UNION ALL SELECT 'detalle_fact', SUM(borrado=0), SUM(borrado=1) FROM detalle_fact
+  UNION ALL SELECT 'exhumados', SUM(borrado=0), SUM(borrado=1) FROM exhumados
+  UNION ALL SELECT 'factura', SUM(borrado=0), SUM(borrado=1) FROM factura
+  UNION ALL SELECT 'funerarias', SUM(borrado=0), SUM(borrado=1) FROM funerarias
+  UNION ALL SELECT 'inhumados', SUM(borrado=0), SUM(borrado=1) FROM inhumados
+  UNION ALL SELECT 'inventario', SUM(borrado=0), SUM(borrado=1) FROM inventario
+  UNION ALL SELECT 'pabellon', SUM(borrado=0), SUM(borrado=1) FROM pabellon
+  UNION ALL SELECT 'servicios', SUM(borrado=0), SUM(borrado=1) FROM servicios
+  UNION ALL SELECT 'conciliacion', SUM(borrado=0), SUM(borrado=1) FROM conciliacion
+  UNION ALL SELECT 'devoluciones', SUM(borrado=0), SUM(borrado=1) FROM devoluciones
+  UNION ALL SELECT 'efectivo', SUM(borrado=0), SUM(borrado=1) FROM efectivo
+  UNION ALL SELECT 'esqueletos', SUM(borrado=0), SUM(borrado=1) FROM esqueletos
+  UNION ALL SELECT 'inhumados_nn', SUM(borrado=0), SUM(borrado=1) FROM inhumados_nn
+  UNION ALL SELECT 'prop_lotes', SUM(borrado=0), SUM(borrado=1) FROM prop_lotes
+  UNION ALL SELECT 'prop_unidades', SUM(borrado=0), SUM(borrado=1) FROM prop_unidades
+  UNION ALL SELECT 'rc', SUM(borrado=0), SUM(borrado=1) FROM rc
+) c
+JOIN (VALUES
+  ROW('bancos', 9, 3), ROW('causa_muerte', 4, 0), ROW('cementerios', 4, 0),
+  ROW('estado_boveda', 6, 4), ROW('forma_pago', 7, 0), ROW('galerias', 4, 4),
+  ROW('items', 99, 3), ROW('lugar_inh', 7, 2), ROW('oficinas', 815, 2),
+  ROW('parentesco', 11, 0), ROW('sector', 2, 1), ROW('tipo_id', 6, 0),
+  ROW('tipo_serv', 9, 0), ROW('tipo_usuario', 2, 0),
+  ROW('consignaciones', 212000, 24418), ROW('cremados', 299492, 173),
+  ROW('detalle_fact', 479324, 27760), ROW('exhumados', 111799, 195),
+  ROW('factura', 403652, 21532), ROW('funerarias', 180, 13),
+  ROW('inhumados', 94425, 99023), ROW('inventario', 119386, 3691),
+  ROW('pabellon', 3161, 1479), ROW('servicios', 829, 292),
+  ROW('conciliacion', 481, 0), ROW('devoluciones', 72, 4),
+  ROW('efectivo', 3533, 322), ROW('esqueletos', 71116, 0),
+  ROW('inhumados_nn', 6052, 117), ROW('prop_lotes', 1233, 132),
+  ROW('prop_unidades', 104789, 12890), ROW('rc', 82, 1173)
+) AS e(tabla, ea, eb) ON e.tabla = c.tabla
+ORDER BY estado DESC, c.tabla;
+
+
+SELECT table_name, table_rows
+FROM information_schema.tables
+WHERE table_schema = 'gestion_cementerios' AND table_name LIKE '%\_bak';
+
+SELECT CONCAT('DROP TABLE `', table_name, '`;')
+FROM information_schema.tables
+WHERE table_schema = 'gestion_cementerios' AND table_name LIKE '%\_bak';
+
+SELECT COUNT(*) FROM information_schema.tables
+WHERE table_schema = 'gestion_cementerios' AND table_type = 'BASE TABLE';
+
+
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'gestion_cementerios'
+  AND table_type = 'BASE TABLE'
+  AND table_name LIKE '%\_bak'
+ORDER BY table_name;
+
+
+SELECT c.tabla, c.activas, e.ea AS activas_esperadas,
+       c.borradas, e.eb AS borradas_esperadas,
+       IF(c.activas = e.ea AND c.borradas = e.eb, 'OK', 'REVISAR') AS estado
+FROM (
+  SELECT 'bancos' AS tabla, SUM(borrado=0) AS activas, SUM(borrado=1) AS borradas FROM bancos
+  UNION ALL SELECT 'causa_muerte', SUM(borrado=0), SUM(borrado=1) FROM causa_muerte
+  UNION ALL SELECT 'cementerios', SUM(borrado=0), SUM(borrado=1) FROM cementerios
+  UNION ALL SELECT 'estado_boveda', SUM(borrado=0), SUM(borrado=1) FROM estado_boveda
+  UNION ALL SELECT 'forma_pago', SUM(borrado=0), SUM(borrado=1) FROM forma_pago
+  UNION ALL SELECT 'galerias', SUM(borrado=0), SUM(borrado=1) FROM galerias
+  UNION ALL SELECT 'items', SUM(borrado=0), SUM(borrado=1) FROM items
+  UNION ALL SELECT 'lugar_inh', SUM(borrado=0), SUM(borrado=1) FROM lugar_inh
+  UNION ALL SELECT 'oficinas', SUM(borrado=0), SUM(borrado=1) FROM oficinas
+  UNION ALL SELECT 'parentesco', SUM(borrado=0), SUM(borrado=1) FROM parentesco
+  UNION ALL SELECT 'sector', SUM(borrado=0), SUM(borrado=1) FROM sector
+  UNION ALL SELECT 'tipo_id', SUM(borrado=0), SUM(borrado=1) FROM tipo_id
+  UNION ALL SELECT 'tipo_serv', SUM(borrado=0), SUM(borrado=1) FROM tipo_serv
+  UNION ALL SELECT 'tipo_usuario', SUM(borrado=0), SUM(borrado=1) FROM tipo_usuario
+  UNION ALL SELECT 'consignaciones', SUM(borrado=0), SUM(borrado=1) FROM consignaciones
+  UNION ALL SELECT 'cremados', SUM(borrado=0), SUM(borrado=1) FROM cremados
+  UNION ALL SELECT 'detalle_fact', SUM(borrado=0), SUM(borrado=1) FROM detalle_fact
+  UNION ALL SELECT 'exhumados', SUM(borrado=0), SUM(borrado=1) FROM exhumados
+  UNION ALL SELECT 'factura', SUM(borrado=0), SUM(borrado=1) FROM factura
+  UNION ALL SELECT 'funerarias', SUM(borrado=0), SUM(borrado=1) FROM funerarias
+  UNION ALL SELECT 'inhumados', SUM(borrado=0), SUM(borrado=1) FROM inhumados
+  UNION ALL SELECT 'inventario', SUM(borrado=0), SUM(borrado=1) FROM inventario
+  UNION ALL SELECT 'pabellon', SUM(borrado=0), SUM(borrado=1) FROM pabellon
+  UNION ALL SELECT 'servicios', SUM(borrado=0), SUM(borrado=1) FROM servicios
+  UNION ALL SELECT 'conciliacion', SUM(borrado=0), SUM(borrado=1) FROM conciliacion
+  UNION ALL SELECT 'devoluciones', SUM(borrado=0), SUM(borrado=1) FROM devoluciones
+  UNION ALL SELECT 'efectivo', SUM(borrado=0), SUM(borrado=1) FROM efectivo
+  UNION ALL SELECT 'esqueletos', SUM(borrado=0), SUM(borrado=1) FROM esqueletos
+  UNION ALL SELECT 'inhumados_nn', SUM(borrado=0), SUM(borrado=1) FROM inhumados_nn
+  UNION ALL SELECT 'prop_lotes', SUM(borrado=0), SUM(borrado=1) FROM prop_lotes
+  UNION ALL SELECT 'prop_unidades', SUM(borrado=0), SUM(borrado=1) FROM prop_unidades
+  UNION ALL SELECT 'rc', SUM(borrado=0), SUM(borrado=1) FROM rc
+) c
+JOIN (
+  SELECT 'bancos' AS tabla, 9 AS ea, 3 AS eb
+  UNION ALL SELECT 'causa_muerte', 4, 0
+  UNION ALL SELECT 'cementerios', 4, 0
+  UNION ALL SELECT 'estado_boveda', 6, 4
+  UNION ALL SELECT 'forma_pago', 7, 0
+  UNION ALL SELECT 'galerias', 4, 4
+  UNION ALL SELECT 'items', 99, 3
+  UNION ALL SELECT 'lugar_inh', 7, 2
+  UNION ALL SELECT 'oficinas', 815, 2
+  UNION ALL SELECT 'parentesco', 11, 0
+  UNION ALL SELECT 'sector', 2, 1
+  UNION ALL SELECT 'tipo_id', 6, 0
+  UNION ALL SELECT 'tipo_serv', 9, 0
+  UNION ALL SELECT 'tipo_usuario', 2, 0
+  UNION ALL SELECT 'consignaciones', 212000, 24418
+  UNION ALL SELECT 'cremados', 299492, 173
+  UNION ALL SELECT 'detalle_fact', 479324, 27760
+  UNION ALL SELECT 'exhumados', 111799, 195
+  UNION ALL SELECT 'factura', 403652, 21532
+  UNION ALL SELECT 'funerarias', 180, 13
+  UNION ALL SELECT 'inhumados', 94425, 99023
+  UNION ALL SELECT 'inventario', 119386, 3691
+  UNION ALL SELECT 'pabellon', 3161, 1479
+  UNION ALL SELECT 'servicios', 829, 292
+  UNION ALL SELECT 'conciliacion', 481, 0
+  UNION ALL SELECT 'devoluciones', 72, 4
+  UNION ALL SELECT 'efectivo', 3533, 322
+  UNION ALL SELECT 'esqueletos', 71116, 0
+  UNION ALL SELECT 'inhumados_nn', 6052, 117
+  UNION ALL SELECT 'prop_lotes', 1233, 132
+  UNION ALL SELECT 'prop_unidades', 104789, 12890
+  UNION ALL SELECT 'rc', 82, 1173
+) e ON e.tabla = c.tabla
+ORDER BY estado DESC, c.tabla;
+
+
