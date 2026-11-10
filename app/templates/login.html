@@ -1,0 +1,22 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Ingreso administrador{% endblock %}
+
+{% block contenido %}
+<div class="tarjeta tarjeta-login">
+    <h1>Ingreso administrador</h1>
+
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario" name="usuario" required autofocus>
+
+        <label for="clave">Clave</label>
+        <input type="password" id="clave" name="clave" required>
+
+        <button type="submit">Entrar</button>
+    </form>
+</div>
+{% endblock %}

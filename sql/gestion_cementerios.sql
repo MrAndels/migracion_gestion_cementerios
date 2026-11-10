@@ -1712,4 +1712,65 @@ JOIN (
 ) e ON e.tabla = c.tabla
 ORDER BY estado DESC, c.tabla;
 
+SELECT table_name, table_rows
+FROM information_schema.tables
+WHERE table_schema = 'gestion_cementerios'
+ORDER BY table_name;
 
+
+SELECT table_name,
+       GROUP_CONCAT(column_name ORDER BY ordinal_position SEPARATOR ', ') AS columnas
+FROM information_schema.columns
+WHERE table_schema = 'gestion_cementerios'
+  AND table_name IN (
+    'v_inhumados_activos', 'v_cremados_activos', 'v_exhumados_activos',
+    'v_factura_activos', 'v_detalle_fact_activos', 'v_prop_unidades_activos',
+    'v_cementerios_activos', 'v_oficinas_activos', 'v_consignaciones_activos'
+  )
+GROUP BY table_name;
+
+
+SELECT COUNT(*) AS total,
+       SUM(prop_nit IS NOT NULL AND prop_nit <> '') AS con_nit,
+       COUNT(DISTINCT prop_nit) AS nits_distintos,
+       COUNT(DISTINCT prop_lote_id) AS lotes_distintos
+FROM v_prop_unidades_activos;
+
+
+SELECT 'inhumados' AS tabla, MIN(YEAR(fecha_inh)) AS desde, MAX(YEAR(fecha_inh)) AS hasta FROM v_inhumados_activos
+UNION ALL
+SELECT 'cremados', MIN(YEAR(fecha_cre)), MAX(YEAR(fecha_cre)) FROM v_cremados_activos
+UNION ALL
+SELECT 'exhumados', MIN(YEAR(fecha_exh)), MAX(YEAR(fecha_exh)) FROM v_exhumados_activos
+UNION ALL
+SELECT 'facturas', MIN(YEAR(fecha)), MAX(YEAR(fecha)) FROM v_factura_activos;
+
+
+SELECT FLOOR(YEAR(fecha_inh) / 10) * 10 AS decada, COUNT(*) AS n
+FROM v_inhumados_activos
+WHERE fecha_inh IS NOT NULL
+GROUP BY decada
+ORDER BY decada;
+
+
+SELECT anulada, COUNT(*) AS n, SUM(valor) AS total
+FROM v_factura_activos
+GROUP BY anulada;
+
+
+SELECT t.cementerio, c.nombre, COUNT(*) AS n
+FROM (
+    SELECT cementerio FROM v_inhumados_activos
+    UNION ALL
+    SELECT cementerio FROM v_cremados_activos
+) t
+LEFT JOIN v_cementerios_activos c ON c.cementerio = t.cementerio
+GROUP BY t.cementerio, c.nombre
+ORDER BY n DESC;
+
+
+
+SELECT estado, COUNT(*) AS n
+FROM v_prop_unidades_activos
+GROUP BY estado
+ORDER BY n DESC;

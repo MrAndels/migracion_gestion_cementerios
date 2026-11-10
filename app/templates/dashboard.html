@@ -1,0 +1,54 @@
+<!-- app/templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+<h1>Inicio</h1>
+
+<section class="totales">
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.inhumados) }}</span><span class="etiqueta">Inhumados</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.cremados) }}</span><span class="etiqueta">Cremados</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.exhumados) }}</span><span class="etiqueta">Exhumados</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.unidades) }}</span><span class="etiqueta">Unidades</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.propietarios) }}</span><span class="etiqueta">Lotes con propietario</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.facturas) }}</span><span class="etiqueta">Facturas válidas</span></div>
+</section>
+
+<section class="cuadros">
+    {% for c in cuadros %}
+    <a class="cuadro" href="{{ url_for(c.endpoint) }}">
+        <div class="titulo">{{ c.titulo }} →</div>
+        <div class="cifra">{{ c.cifra }}</div>
+        <div class="detalle">{{ c.detalle }}</div>
+    </a>
+    {% endfor %}
+</section>
+
+<section class="graficas-inicio">
+    {% for g in graficas %}
+    <div class="tarjeta grafica {{ 'ancha' if loop.first }}" id="g-{{ g.id }}">
+        <h3>{{ g.titulo }}</h3>
+        <div class="controles">
+            {% if g.periodo %}
+            <div><span class="rotulo">Período</span><select class="sel-periodo"></select></div>
+            {% endif %}
+            <div><span class="rotulo">Tipo de gráfica</span><select class="sel-tipo"></select></div>
+        </div>
+        <div class="lienzo"></div>
+    </div>
+    {% endfor %}
+</section>
+
+<!-- Datos de las gráficas: el navegador no ejecuta este bloque, solo lo guarda como texto -->
+<script id="datos-graficas" type="application/json">{{ graficas | tojson }}</script>
+
+<script src="{{ url_for('static', filename='plotly.min.js') }}" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='graficas.js') }}"></script>
+<script>
+    const datosGraficas = JSON.parse(
+        document.getElementById("datos-graficas").textContent
+    );
+    iniciarGraficas(datosGraficas);
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!-- app/templates/base.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}Gestión de Cementerios{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body>
+    <header class="barra">
+        <a class="marca" href="{{ url_for('publico.inicio') }}">Gestión de Cementerios</a>
+        <nav class="menu">
+            {% if current_user.is_authenticated %}
+                {% set ep = request.endpoint %}
+                <a href="{{ url_for('dashboard.dashboard') }}" class="{{ 'activo' if ep == 'dashboard.dashboard' }}">Inicio</a>
+                <a href="{{ url_for('dashboard.servicios') }}" class="{{ 'activo' if ep == 'dashboard.servicios' }}">Servicios</a>
+                <a href="{{ url_for('dashboard.ingresos') }}" class="{{ 'activo' if ep == 'dashboard.ingresos' }}">Ingresos</a>
+                <a href="{{ url_for('dashboard.ocupacion') }}" class="{{ 'activo' if ep == 'dashboard.ocupacion' }}">Ocupación</a>
+                <a href="{{ url_for('dashboard.personas') }}" class="{{ 'activo' if ep == 'dashboard.personas' }}">Personas</a>
+                <a href="{{ url_for('dashboard.datos') }}" class="{{ 'activo' if ep == 'dashboard.datos' }}">Datos</a>
+                <a href="{{ url_for('auth.logout') }}">Salir</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}">Admin</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="contenido">
+        {% with mensajes = get_flashed_messages() %}
+            {% for m in mensajes %}
+                <div class="aviso">{{ m }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        {% block contenido %}{% endblock %}
+    </main>
+
+    <footer class="pie">
+        Proyecto de migración SYSACYH → MySQL
+    </footer>
+</body>
+</html>

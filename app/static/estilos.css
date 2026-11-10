@@ -1,0 +1,145 @@
+/* app/static/estilos.css */
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    background: #f4f6f5;
+    color: #222;
+}
+
+/* Barra superior y menú */
+.barra {
+    background: #2f4f3e;
+    padding: 0.8rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.marca {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.menu a {
+    color: #d7e6dc;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+.menu a:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.menu a.activo { background: rgba(255, 255, 255, 0.22); color: #fff; font-weight: 600; }
+
+/* Estructura */
+.contenido {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+.pie {
+    text-align: center;
+    padding: 2rem;
+    color: #777;
+    font-size: 0.9rem;
+}
+.tarjeta {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Formularios */
+.tarjeta-login { max-width: 380px; margin: 3rem auto; }
+label { display: block; margin-top: 1rem; font-weight: 600; }
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 0.6rem;
+    margin-top: 0.3rem;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+button {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 0.7rem;
+    background: #2f4f3e;
+    color: #fff;
+    border: 0;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+button:hover { background: #3d6650; }
+.aviso {
+    background: #fdecea;
+    color: #8a1f17;
+    padding: 0.8rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+/* Tarjetas de totales */
+.totales {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.total {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.total .numero { display: block; font-size: 1.6rem; font-weight: bold; color: #2f4f3e; }
+.total .etiqueta { color: #666; font-size: 0.9rem; }
+
+/* Cuadros de categorías (Inicio) */
+.cuadros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;   /* CAMBIO: separa los cuadros de las gráficas */
+}
+.cuadro {
+    display: block;
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #e1e8e3;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    transition: transform 0.12s, border-color 0.12s;
+}
+.cuadro:hover { transform: translateY(-2px); border-color: #2f4f3e; }
+.cuadro .titulo { font-weight: 600; color: #2f4f3e; }
+.cuadro .cifra { font-size: 1.8rem; font-weight: bold; margin: 0.4rem 0; }
+.cuadro .detalle { color: #777; font-size: 0.9rem; }
+
+/* Gráficas (se usan después) */
+.grafica { margin-bottom: 1.5rem; padding: 1.2rem 1.5rem; }   /* CAMBIO: padding más amplio */
+
+/* Gráficas del Inicio con desplegables */
+.grafica h3 { margin: 0 0 0.8rem; font-size: 1.05rem; color: #2f4f3e; }
+.controles { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.rotulo { display: block; font-size: 0.8rem; color: #666; margin-bottom: 0.25rem; }
+.controles select {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background: #fff;
+    min-width: 11rem;
+    font-size: 0.95rem;
+}
+.lienzo { min-height: 380px; }
