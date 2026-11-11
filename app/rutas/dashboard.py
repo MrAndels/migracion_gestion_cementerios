@@ -1,6 +1,10 @@
 # app/rutas/dashboard.py
 from flask import Blueprint, render_template
 from flask_login import login_required
+from rutas.servicios import vista_servicios
+from rutas.ingresos import vista_ingresos
+from rutas.ocupacion import vista_ocupacion
+from rutas.personas import vista_personas
 
 from db import consultar, consultar_uno
 
@@ -12,6 +16,9 @@ GRIS = "#888780"
 
 # Facturas válidas: anulada = 0 o vacío
 VALIDAS = "COALESCE(anulada, 0) = 0"
+
+# La gráfica de servicios por año muestra desde este año
+ANIO_DESDE = 2000
 
 TIPOS_TIEMPO = [("barras", "Barras"), ("lineas", "Líneas"),
                 ("puntos", "Puntos"), ("area", "Área")]
@@ -52,7 +59,8 @@ def datos_servicios_anio():
     for nombre, vista, campo, color in fuentes:
         filas = consultar(
             f"SELECT YEAR({campo}) AS anio, COUNT(*) AS n "
-            f"FROM {vista} WHERE {campo} IS NOT NULL "
+            f"FROM {vista} "
+            f"WHERE {campo} IS NOT NULL AND YEAR({campo}) >= {ANIO_DESDE} "
             f"GROUP BY anio ORDER BY anio"
         )
         por_serie.append((nombre, color, {f["anio"]: f["n"] for f in filas}))
@@ -61,9 +69,10 @@ def datos_servicios_anio():
     anios = list(range(min(todos), max(todos) + 1))
     series = [dict(nombre=n, color=c, valores=[int(d.get(a, 0)) for a in anios])
               for n, c, d in por_serie]
-    return dict(id="servicios", titulo="Servicios por año", periodo=True,
-                tipos=TIPOS_SERVICIOS, tipo_inicial="barras", categorico=False,
-                categorias=anios, series=series,
+    return dict(id="servicios",
+                titulo=f"Servicios por año (desde {ANIO_DESDE})",
+                periodo=True, tipos=TIPOS_SERVICIOS, tipo_inicial="barras",
+                categorico=False, categorias=anios, series=series,
                 eje_x="Año", eje_y="Cantidad")
 
 
@@ -178,25 +187,25 @@ def _proximamente(titulo):
 @dashboard_bp.route("/servicios")
 @login_required
 def servicios():
-    return _proximamente("Servicios")
+    return vista_servicios()
 
 
 @dashboard_bp.route("/ingresos")
 @login_required
 def ingresos():
-    return _proximamente("Ingresos")
+    return vista_ingresos()
 
 
 @dashboard_bp.route("/ocupacion")
 @login_required
 def ocupacion():
-    return _proximamente("Ocupación")
+    return vista_ocupacion()
 
 
 @dashboard_bp.route("/personas")
 @login_required
 def personas():
-    return _proximamente("Personas")
+    return vista_personas()
 
 
 @dashboard_bp.route("/datos")

@@ -1,0 +1,12 @@
+<!-- app/templates/limite.html -->
+{% extends "base.html" %}
+
+{% block titulo %}Demasiados intentos{% endblock %}
+
+{% block contenido %}
+<div class="tarjeta tarjeta-consulta">
+    <h1>Demasiados intentos</h1>
+    <p>Hiciste muchas consultas seguidas. Espera un minuto e inténtalo de nuevo.</p>
+    <a class="btn" href="{{ url_for('consulta.consulta') }}">Volver</a>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+<!-- app/templates/consulta.html -->
+{% extends "base.html" %}
+
+{% block titulo %}Consulta{% endblock %}
+
+{% block contenido %}
+<h1>Consulta de información</h1>
+
+<form method="post" class="tarjeta tarjeta-consulta">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label for="cedula">Cédula</label>
+    <input type="text" id="cedula" name="cedula" inputmode="numeric" autocomplete="off" value="{{ valores.cedula or '' }}">
+    <p class="ayuda">La del responsable del servicio o la del fallecido.</p>
+
+    <label for="nombre">Nombre completo del fallecido</label>
+    <input type="text" id="nombre" name="nombre" autocomplete="off" value="{{ valores.nombre or '' }}">
+    <p class="ayuda">Escribe la cédula, el nombre completo, o ambos para una búsqueda más precisa.</p>
+
+    <button type="submit">Consultar</button>
+</form>
+
+{% if error %}
+<div class="aviso tarjeta-consulta">{{ error }}</div>
+{% endif %}
+
+{% if resultados %}
+<h2 class="grupo">{{ resultados | length }} resultado{{ 's' if resultados | length > 1 }}</h2>
+{% if truncado %}
+<p class="nota">Hay más coincidencias. Se muestran las primeras {{ resultados | length }}; escribe el nombre completo o la cédula para afinar.</p>
+{% endif %}
+{% for r in resultados %}
+<section class="tarjeta resultado">
+    <strong>{{ r.servicio }}</strong>
+    <dl>
+        <dt>Fallecido</dt><dd>{{ r.fallecido }}</dd>
+        <dt>Fecha</dt><dd>{{ r.fecha }}</dd>
+        <dt>Cementerio</dt><dd>{{ r.cementerio }}</dd>
+        <dt>Ubicación</dt><dd>{{ r.ubicacion }}</dd>
+    </dl>
+</section>
+{% endfor %}
+<p class="nota">Esta consulta es de solo lectura. Para cambiar algún dato, comunícate con la administración.</p>
+{% endif %}
+{% endblock %}

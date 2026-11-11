@@ -1,0 +1,26 @@
+<!-- app/templates/admin/tablas.html -->
+{% extends "base.html" %}
+
+{% block titulo %}Datos{% endblock %}
+
+{% block contenido %}
+<h1>Datos</h1>
+
+<nav class="pestanas">
+    <a class="activa" href="{{ url_for('admin.tablas') }}">Tablas</a>
+    <a href="{{ url_for('admin.historial') }}">Historial</a>
+</nav>
+
+{% for grupo, lista in grupos %}
+<h2 class="grupo">{{ grupo }}</h2>
+<section class="cuadros cuadros-chicos">
+    {% for t in lista %}
+    <a class="cuadro" href="{{ url_for('admin.lista', tabla=t) }}">
+        <div class="titulo">{{ t | replace('_', ' ') | capitalize }}</div>
+        <div class="cifra">{{ "{:,}".format(conteos[t]) }}</div>
+        <div class="detalle">{{ 'Solo lectura' if t in solo_lectura else 'Editable' }}</div>
+    </a>
+    {% endfor %}
+</section>
+{% endfor %}
+{% endblock %}

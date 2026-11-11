@@ -1,0 +1,50 @@
+<!-- app/templates/admin/historial.html -->
+{% extends "base.html" %}
+
+{% block titulo %}Historial{% endblock %}
+
+{% block contenido %}
+<h1>Historial de cambios</h1>
+
+<nav class="pestanas">
+    <a href="{{ url_for('admin.tablas') }}">Tablas</a>
+    <a class="activa" href="{{ url_for('admin.historial') }}">Historial</a>
+</nav>
+
+<form method="get" class="filtros">
+    <div>
+        <span class="rotulo">Tabla</span>
+        <select name="tabla" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            {% for t in tablas %}
+            <option value="{{ t }}" {{ 'selected' if t == tabla }}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+<p class="nota">Últimos 300 cambios.</p>
+
+<div class="tabla-scroll">
+<table class="tabla">
+    <thead>
+        <tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Tabla</th><th>Registro</th><th>Detalle</th><th>IP</th></tr>
+    </thead>
+    <tbody>
+        {% for f in filas %}
+        <tr>
+            <td>{{ f.fecha.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ f.usuario }}</td>
+            <td>{{ f.accion }}</td>
+            <td>{{ f.tabla }}</td>
+            <td>{{ f.registro_id }}</td>
+            <td class="detalle-largo">{{ f.detalle or '' }}</td>
+            <td>{{ f.ip or '' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">Todavía no hay cambios registrados.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

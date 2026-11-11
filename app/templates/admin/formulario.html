@@ -1,0 +1,46 @@
+<!-- app/templates/admin/formulario.html -->
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<h1>{{ tabla | replace('_', ' ') | capitalize }}</h1>
+<h2 class="grupo">{{ titulo }}{{ ' (eliminado)' if eliminado }}</h2>
+
+<form method="post" class="tarjeta">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="campos">
+        {% for c in campos %}
+        <div>
+            <label for="f-{{ c.nombre }}">{{ c.nombre }}{{ ' *' if c.obligatorio and modo != 'ver' }}</label>
+            {% set v = valores.get(c.nombre, '') %}
+            {% set bloqueado = 'disabled' if modo == 'ver' else '' %}
+            {% if c.tipo in ['tinyint', 'smallint', 'mediumint', 'int', 'bigint'] %}
+                <input type="number" step="1" id="f-{{ c.nombre }}" name="{{ c.nombre }}" value="{{ v }}" {{ bloqueado }} {{ 'required' if c.obligatorio and modo != 'ver' }}>
+            {% elif c.tipo in ['decimal', 'float', 'double'] %}
+                <input type="number" step="any" id="f-{{ c.nombre }}" name="{{ c.nombre }}" value="{{ v }}" {{ bloqueado }} {{ 'required' if c.obligatorio and modo != 'ver' }}>
+            {% elif c.tipo == 'date' %}
+                <input type="date" id="f-{{ c.nombre }}" name="{{ c.nombre }}" value="{{ v }}" {{ bloqueado }} {{ 'required' if c.obligatorio and modo != 'ver' }}>
+            {% elif c.tipo in ['datetime', 'timestamp'] %}
+                <input type="datetime-local" id="f-{{ c.nombre }}" name="{{ c.nombre }}" value="{{ v }}" {{ bloqueado }} {{ 'required' if c.obligatorio and modo != 'ver' }}>
+            {% elif c.tipo in ['text', 'tinytext', 'mediumtext', 'longtext'] %}
+                <textarea id="f-{{ c.nombre }}" name="{{ c.nombre }}" rows="3" {{ bloqueado }}>{{ v }}</textarea>
+            {% else %}
+                <input type="text" id="f-{{ c.nombre }}" name="{{ c.nombre }}" value="{{ v }}" {% if c.largo %}maxlength="{{ c.largo }}"{% endif %} {{ bloqueado }}>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="botones-form">
+        {% if modo != 'ver' %}
+        <button type="submit" class="btn">Guardar</button>
+        {% endif %}
+        <a class="btn btn-sec" href="{{ url_for('admin.lista', tabla=tabla) }}">{{ 'Volver' if modo == 'ver' else 'Cancelar' }}</a>
+        {% if modo == 'ver' and editable and not eliminado %}
+        <a class="btn" href="{{ url_for('admin.editar', tabla=tabla, id=id) }}">Editar</a>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

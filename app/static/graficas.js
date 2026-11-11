@@ -14,7 +14,7 @@ function periodosDe(anios) {
   return lista;
 }
 
-function dibujar(lienzo, g, tipo, desde, hasta) {
+function dibujar(lienzo, g, tipo, desde, hasta, limite) {
   let cats = g.categorias;
   let series = g.series;
 
@@ -24,6 +24,13 @@ function dibujar(lienzo, g, tipo, desde, hasta) {
     cats = idx.map(function (i) { return g.categorias[i]; });
     series = g.series.map(function (s) {
       return Object.assign({}, s, { valores: idx.map(function (i) { return s.valores[i]; }) });
+    });
+  }
+
+  if (limite && limite > 0 && cats.length > limite) {
+    cats = cats.slice(0, limite);
+    series = series.map(function (s) {
+      return Object.assign({}, s, { valores: s.valores.slice(0, limite) });
     });
   }
 
@@ -95,7 +102,9 @@ function dibujar(lienzo, g, tipo, desde, hasta) {
 
   if (horizontal) {
     layout.xaxis = ejeVal;
-    layout.yaxis = { type: "category", autorange: "reversed", automargin: true };
+    layout.yaxis = { type: "category", autorange: "reversed", automargin: true, dtick: 1 };
+    // Con muchas barras la gráfica crece para que cada nombre se lea
+    layout.height = Math.max(380, cats.length * 24 + 90);
   } else {
     layout.xaxis = ejeCat;
     layout.yaxis = ejeVal;
@@ -111,6 +120,7 @@ function iniciarGraficas(lista) {
     const lienzo = caja.querySelector(".lienzo");
     const selT = caja.querySelector(".sel-tipo");
     const selP = caja.querySelector(".sel-periodo");
+    const selL = caja.querySelector(".sel-limite");
 
     g.tipos.forEach(function (t) { selT.add(new Option(t[1], t[0])); });
     selT.value = g.tipo_inicial;
@@ -121,13 +131,22 @@ function iniciarGraficas(lista) {
       periodos.forEach(function (p, i) { selP.add(new Option(p.texto, i)); });
     }
 
+    if (selL && g.limites) {
+      g.limites.forEach(function (l) {
+        selL.add(new Option(l === 0 ? "Todas (" + g.categorias.length + ")" : "Top " + l, l));
+      });
+      selL.value = g.limite_inicial;
+    }
+
     function refrescar() {
       const p = selP ? periodos[selP.value] : {};
-      dibujar(lienzo, g, selT.value, p.desde, p.hasta);
+      const l = selL ? parseInt(selL.value, 10) : 0;
+      dibujar(lienzo, g, selT.value, p.desde, p.hasta, l);
     }
 
     selT.addEventListener("change", refrescar);
     if (selP) selP.addEventListener("change", refrescar);
+    if (selL) selL.addEventListener("change", refrescar);
     refrescar();
   });
 }

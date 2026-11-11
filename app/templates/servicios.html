@@ -1,0 +1,65 @@
+<!-- app/templates/servicios.html -->
+{% extends "base.html" %}
+
+{% block titulo %}Servicios{% endblock %}
+
+{% block contenido %}
+<h1>Servicios</h1>
+
+<form method="get" class="filtros">
+    <div>
+        <span class="rotulo">Año</span>
+        <select name="anio" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for a in anios %}
+            <option value="{{ a }}" {{ 'selected' if a == anio }}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <span class="rotulo">Cementerio</span>
+        <select name="cem" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for c in cementerios %}
+            <option value="{{ c.cementerio }}" {{ 'selected' if (c.cementerio | string) == cem }}>{{ c.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% if anio or cem %}
+    <a class="limpiar" href="{{ url_for('dashboard.servicios') }}">Limpiar filtros</a>
+    {% endif %}
+</form>
+
+<section class="totales">
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.Inhumados) }}</span><span class="etiqueta">Inhumados</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.Cremados) }}</span><span class="etiqueta">Cremados</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.Exhumados) }}</span><span class="etiqueta">Exhumados</span></div>
+</section>
+
+<section class="graficas-inicio">
+    {% for g in graficas %}
+    <div class="tarjeta grafica {{ 'ancha' if loop.first }}" id="g-{{ g.id }}">
+        <h3>{{ g.titulo }}</h3>
+        <div class="controles">
+            {% if g.periodo %}
+            <div><span class="rotulo">Período</span><select class="sel-periodo"></select></div>
+            {% endif %}
+            <div><span class="rotulo">Tipo de gráfica</span><select class="sel-tipo"></select></div>
+        </div>
+        <div class="lienzo"></div>
+    </div>
+    {% endfor %}
+</section>
+
+<!-- Datos de las gráficas: el navegador no ejecuta este bloque, solo lo guarda como texto -->
+<script id="datos-graficas" type="application/json">{{ graficas | tojson }}</script>
+
+<script src="{{ url_for('static', filename='plotly.min.js') }}" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='graficas.js') }}"></script>
+<script>
+    const datosGraficas = JSON.parse(
+        document.getElementById("datos-graficas").textContent
+    );
+    iniciarGraficas(datosGraficas);
+</script>
+{% endblock %}

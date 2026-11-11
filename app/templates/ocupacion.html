@@ -1,0 +1,53 @@
+<!-- app/templates/ocupacion.html -->
+{% extends "base.html" %}
+
+{% block titulo %}Ocupación{% endblock %}
+
+{% block contenido %}
+<h1>Ocupación</h1>
+
+<form method="get" class="filtros">
+    <div>
+        <span class="rotulo">Cementerio</span>
+        <select name="cem" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for c in cementerios %}
+            <option value="{{ c.cementerio }}" {{ 'selected' if (c.cementerio | string) == cem }}>{{ c.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% if cem %}
+    <a class="limpiar" href="{{ url_for('dashboard.ocupacion') }}">Limpiar filtro</a>
+    {% endif %}
+</form>
+
+<section class="totales">
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.unidades) }}</span><span class="etiqueta">Unidades</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.con_lote) }}</span><span class="etiqueta">Con lote asociado</span></div>
+    <div class="total"><span class="numero">{{ "{:,}".format(totales.lotes) }}</span><span class="etiqueta">Lotes distintos</span></div>
+</section>
+
+<section class="graficas-inicio">
+    {% for g in graficas %}
+    <div class="tarjeta grafica" id="g-{{ g.id }}">
+        <h3>{{ g.titulo }}</h3>
+        <div class="controles">
+            <div><span class="rotulo">Tipo de gráfica</span><select class="sel-tipo"></select></div>
+        </div>
+        <div class="lienzo"></div>
+    </div>
+    {% endfor %}
+</section>
+
+<!-- Datos de las gráficas: el navegador no ejecuta este bloque, solo lo guarda como texto -->
+<script id="datos-graficas" type="application/json">{{ graficas | tojson }}</script>
+
+<script src="{{ url_for('static', filename='plotly.min.js') }}" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='graficas.js') }}"></script>
+<script>
+    const datosGraficas = JSON.parse(
+        document.getElementById("datos-graficas").textContent
+    );
+    iniciarGraficas(datosGraficas);
+</script>
+{% endblock %}

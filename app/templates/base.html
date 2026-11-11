@@ -12,13 +12,14 @@
         <a class="marca" href="{{ url_for('publico.inicio') }}">Gestión de Cementerios</a>
         <nav class="menu">
             {% if current_user.is_authenticated %}
-                {% set ep = request.endpoint %}
+                <a href="{{ url_for('consulta.consulta') }}">Consulta</a>
+                {% set ep = request.endpoint or '' %}
                 <a href="{{ url_for('dashboard.dashboard') }}" class="{{ 'activo' if ep == 'dashboard.dashboard' }}">Inicio</a>
                 <a href="{{ url_for('dashboard.servicios') }}" class="{{ 'activo' if ep == 'dashboard.servicios' }}">Servicios</a>
                 <a href="{{ url_for('dashboard.ingresos') }}" class="{{ 'activo' if ep == 'dashboard.ingresos' }}">Ingresos</a>
                 <a href="{{ url_for('dashboard.ocupacion') }}" class="{{ 'activo' if ep == 'dashboard.ocupacion' }}">Ocupación</a>
                 <a href="{{ url_for('dashboard.personas') }}" class="{{ 'activo' if ep == 'dashboard.personas' }}">Personas</a>
-                <a href="{{ url_for('dashboard.datos') }}" class="{{ 'activo' if ep == 'dashboard.datos' }}">Datos</a>
+                <a href="{{ url_for('admin.tablas') }}" class="{{ 'activo' if ep.startswith('admin.') }}">Datos</a>
                 <a href="{{ url_for('auth.logout') }}">Salir</a>
             {% else %}
                 <a href="{{ url_for('auth.login') }}">Admin</a>
@@ -27,9 +28,9 @@
     </header>
 
     <main class="contenido">
-        {% with mensajes = get_flashed_messages() %}
-            {% for m in mensajes %}
-                <div class="aviso">{{ m }}</div>
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% for categoria, m in mensajes %}
+                <div class="aviso {{ 'aviso-ok' if categoria == 'ok' }}">{{ m }}</div>
             {% endfor %}
         {% endwith %}
 

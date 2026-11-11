@@ -2,6 +2,10 @@
 {% extends "base.html" %}
 
 {% block contenido %}
-<h1>Bienvenido</h1>
-<p>Conectado a la base de datos. Tablas: <strong>{{ n_tablas }}</strong></p>
+<h1>Gestión de Cementerios</h1>
+
+<div class="tarjeta">
+    <p>Consulta la información de un servicio a partir de la cédula del responsable.</p>
+    <a class="btn" href="{{ url_for('consulta.consulta') }}">Consultar información</a>
+</div>
 {% endblock %}

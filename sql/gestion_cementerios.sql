@@ -1774,3 +1774,89 @@ SELECT estado, COUNT(*) AS n
 FROM v_prop_unidades_activos
 GROUP BY estado
 ORDER BY n DESC;
+
+SELECT * FROM v_estado_boveda_activos;
+
+
+SELECT * FROM v_funerarias_activos LIMIT 5;
+SELECT funeraria, COUNT(*) AS n
+FROM v_factura_activos
+GROUP BY funeraria
+ORDER BY n DESC
+LIMIT 5;
+
+SELECT column_name
+FROM information_schema.columns
+WHERE table_schema = 'gestion_cementerios'
+  AND table_name = 'v_factura_activos'
+  AND column_name LIKE '%fun%';
+  
+  
+CREATE TABLE IF NOT EXISTS log_cambios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usuario VARCHAR(50) NOT NULL,
+    accion ENUM('crear','modificar','eliminar','restaurar') NOT NULL,
+    tabla VARCHAR(64) NOT NULL,
+    registro_id INT NULL,
+    detalle TEXT NULL,
+    ip VARCHAR(45) NULL,
+    INDEX (tabla, registro_id),
+    INDEX (fecha)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SHOW GRANTS FOR CURRENT_USER();
+
+SELECT c.table_name, c.column_name, c.column_default, c.extra
+FROM information_schema.columns c
+JOIN information_schema.tables t
+  ON t.table_schema = c.table_schema AND t.table_name = c.table_name
+WHERE c.table_schema = 'gestion_cementerios'
+  AND t.table_type = 'BASE TABLE'
+  AND RIGHT(c.table_name, 4) <> '_bak'
+  AND c.column_name IN ('id', 'borrado')
+ORDER BY c.table_name, c.column_name;
+
+SELECT table_name, column_name, data_type, column_key, extra
+FROM information_schema.columns
+WHERE table_schema = 'gestion_cementerios'
+  AND table_name IN ('funerarias', 'prop_lotes', 'inhumados')
+ORDER BY table_name, ordinal_position;
+  
+  
+ SELECT 'inhumados.nit_deudo' AS columna, COUNT(*) AS total,
+       SUM(nit_deudo IS NOT NULL AND nit_deudo <> '') AS llenos,
+       COUNT(DISTINCT nit_deudo) AS distintos
+FROM v_inhumados_activos
+UNION ALL
+SELECT 'inhumados.cedula', COUNT(*),
+       SUM(cedula IS NOT NULL AND cedula <> ''), COUNT(DISTINCT cedula)
+FROM v_inhumados_activos
+UNION ALL
+SELECT 'cremados.nit_deudo', COUNT(*),
+       SUM(nit_deudo IS NOT NULL AND nit_deudo <> ''), COUNT(DISTINCT nit_deudo)
+FROM v_cremados_activos
+UNION ALL
+SELECT 'cremados.cedula', COUNT(*),
+       SUM(cedula IS NOT NULL AND cedula <> ''), COUNT(DISTINCT cedula)
+FROM v_cremados_activos
+UNION ALL
+SELECT 'exhumados.nit_deudo', COUNT(*),
+       SUM(nit_deudo IS NOT NULL AND nit_deudo <> ''), COUNT(DISTINCT nit_deudo)
+FROM v_exhumados_activos
+UNION ALL
+SELECT 'prop_unidades.prop_nit', COUNT(*),
+       SUM(prop_nit IS NOT NULL AND prop_nit <> ''), COUNT(DISTINCT prop_nit)
+FROM v_prop_unidades_activos;
+
+
+CREATE TABLE IF NOT EXISTS log_consultas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip VARCHAR(45) NULL,
+    doc_hash CHAR(64) NOT NULL,
+    resultado ENUM('ok','fallo') NOT NULL,
+    n_registros INT NOT NULL DEFAULT 0,
+    INDEX (fecha),
+    INDEX (ip, fecha)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

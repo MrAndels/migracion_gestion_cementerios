@@ -1,0 +1,87 @@
+<!-- app/templates/admin/lista.html -->
+{% extends "base.html" %}
+
+{% block titulo %}{{ tabla }}{% endblock %}
+
+{% block contenido %}
+<h1>{{ tabla | replace('_', ' ') | capitalize }}</h1>
+
+<nav class="pestanas">
+    <a class="activa" href="{{ url_for('admin.tablas') }}">Tablas</a>
+    <a href="{{ url_for('admin.historial') }}">Historial</a>
+</nav>
+
+<form method="get" class="filtros">
+    <div>
+        <span class="rotulo">Buscar</span>
+        <input type="text" name="q" value="{{ q }}" placeholder="Nombre, cédula, factura, id...">
+    </div>
+    <label class="casilla">
+        <input type="checkbox" name="eliminados" value="1" {{ 'checked' if eliminados }} onchange="this.form.submit()">
+        Ver eliminados
+    </label>
+    <button type="submit" class="btn">Buscar</button>
+    {% if q or eliminados %}
+    <a class="limpiar" href="{{ url_for('admin.lista', tabla=tabla) }}">Limpiar</a>
+    {% endif %}
+    {% if editable and not eliminados %}
+    <a class="btn" href="{{ url_for('admin.nuevo', tabla=tabla) }}">+ Nuevo</a>
+    {% endif %}
+</form>
+
+{% if not editable %}
+<p class="nota">Esta tabla es de solo lectura porque afecta cuentas.</p>
+{% endif %}
+
+<p class="nota">{{ "{:,}".format(total) }} registros{{ ' eliminados' if eliminados }} · página {{ pagina }} de {{ paginas }}</p>
+
+<div class="tabla-scroll">
+<table class="tabla">
+    <thead>
+        <tr>
+            <th>Acciones</th>
+            <th>id</th>
+            {% for c in visibles %}<th>{{ c.nombre }}</th>{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for id, celdas in filas %}
+        <tr>
+            <td>
+                <div class="acciones">
+                    <a class="btn btn-sec btn-chico" href="{{ url_for('admin.ver', tabla=tabla, id=id) }}">Ver</a>
+                    {% if editable and not eliminados %}
+                    <a class="btn btn-sec btn-chico" href="{{ url_for('admin.editar', tabla=tabla, id=id) }}">Editar</a>
+                    <form method="post" action="{{ url_for('admin.eliminar', tabla=tabla, id=id) }}" class="en-linea"
+                          onsubmit="return confirm('¿Eliminar este registro? Se marca como borrado, no se pierde.')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-peligro btn-chico">Eliminar</button>
+                    </form>
+                    {% elif editable and eliminados %}
+                    <form method="post" action="{{ url_for('admin.restaurar', tabla=tabla, id=id) }}" class="en-linea">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-chico">Restaurar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </td>
+            <td>{{ id }}</td>
+            {% for celda in celdas %}<td>{{ celda }}</td>{% endfor %}
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ visibles | length + 2 }}">No hay registros.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<div class="paginas">
+    {% if pagina > 1 %}
+    <a class="btn btn-sec btn-chico" href="{{ url_for('admin.lista', tabla=tabla, pagina=pagina - 1, q=q or None, eliminados=1 if eliminados else None) }}">← Anterior</a>
+    {% endif %}
+    <span>Página {{ pagina }} de {{ paginas }}</span>
+    {% if pagina < paginas %}
+    <a class="btn btn-sec btn-chico" href="{{ url_for('admin.lista', tabla=tabla, pagina=pagina + 1, q=q or None, eliminados=1 if eliminados else None) }}">Siguiente →</a>
+    {% endif %}
+</div>
+{% endblock %}

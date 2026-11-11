@@ -143,3 +143,67 @@ button:hover { background: #3d6650; }
     font-size: 0.95rem;
 }
 .lienzo { min-height: 380px; }
+
+/* Filtros de página */
+.filtros { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.2rem; }
+.filtros select {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background: #fff;
+    min-width: 11rem;
+    font-size: 0.95rem;
+}
+.limpiar { color: #2f4f3e; font-size: 0.9rem; padding-bottom: 0.5rem; }
+
+.totales-anchos { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+
+/* ===== Datos (CRUD) ===== */
+.pestanas { display: flex; gap: 0.3rem; margin-bottom: 1.2rem; border-bottom: 1px solid #d5dcd7; }
+.pestanas a { padding: 0.5rem 1rem; text-decoration: none; color: #555; border-bottom: 3px solid transparent; }
+.pestanas a.activa { color: #2f4f3e; border-bottom-color: #2f4f3e; font-weight: 600; }
+.grupo { margin: 1.5rem 0 0.6rem; font-size: 1.05rem; color: #2f4f3e; }
+.nota { color: #666; font-size: 0.9rem; margin: 0.4rem 0; }
+.cuadros-chicos { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.cuadros-chicos .cifra { font-size: 1.3rem; }
+
+.btn, a.btn {
+    display: inline-block; width: auto; margin: 0; padding: 0.5rem 1rem;
+    background: #2f4f3e; color: #fff; border: 0; border-radius: 4px;
+    font-size: 0.95rem; text-decoration: none; cursor: pointer;
+}
+.btn:hover { background: #3d6650; }
+.btn-sec { background: #e3ebe6; color: #2f4f3e; }
+.btn-sec:hover { background: #d3dfd7; }
+.btn-peligro { background: #a63a30; }
+.btn-peligro:hover { background: #8a2f27; }
+.btn-chico { padding: 0.25rem 0.6rem; font-size: 0.85rem; }
+.en-linea { display: inline; }
+.acciones { display: flex; gap: 0.3rem; }
+
+.tabla-scroll { overflow-x: auto; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); }
+.tabla { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.tabla th, .tabla td { padding: 0.5rem 0.7rem; border-bottom: 1px solid #e6ebe8; text-align: left; white-space: nowrap; }
+.tabla th { background: #f0f4f1; color: #2f4f3e; }
+.tabla .detalle-largo { white-space: normal; min-width: 280px; max-width: 520px; }
+.paginas { display: flex; gap: 0.8rem; align-items: center; margin-top: 1rem; }
+
+.filtros input[type="text"] { width: auto; min-width: 17rem; margin: 0; }
+.casilla { display: flex; gap: 0.4rem; align-items: center; margin: 0 0 0.5rem; font-weight: 400; }
+.aviso-ok { background: #e4f3ea; color: #1d5a3a; }
+
+.campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 1.2rem; }
+.campos input, .campos textarea {
+    width: 100%; padding: 0.55rem; margin-top: 0.3rem; font-family: inherit; font-size: 0.95rem;
+    border: 1px solid #bbb; border-radius: 4px; box-sizing: border-box;
+}
+.campos input:disabled, .campos textarea:disabled { background: #f3f5f4; color: #333; }
+.botones-form { display: flex; gap: 0.6rem; margin-top: 1.5rem; }
+
+/* ===== Consulta pública ===== */
+.tarjeta-consulta { max-width: 520px; margin: 0 auto 1.5rem; }
+.ayuda { color: #777; font-size: 0.85rem; margin: 0.4rem 0 0; }
+.resultado { max-width: 520px; margin: 0 auto 1rem; border-left: 4px solid #2f4f3e; }
+.resultado dl { display: grid; grid-template-columns: 8rem 1fr; gap: 0.3rem 1rem; margin: 0.6rem 0 0; }
+.resultado dt { color: #666; }
+.resultado dd { margin: 0; }
